@@ -4,12 +4,13 @@
   "description": "Its a demo ",
   "main": "index.js",
   "scripts": {
-
-     "start": "npx nodemon index"
+    "start": "npx nodemon index"
   },
   "author": "sahil",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
-  }
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12"
+  },
+  "devDependencies": {}
 }
