@@ -1,7 +1,23 @@
+require("dotenv").config();
 // const { json } = require("express");
 const express = require("express");
+
+const mongoose= require("mongoose"); 
 var bodyParser = require("body-parser");
 const Database = require("./database");
+
+ mongoose.connect(process.env.MongO_URL,
+  {
+  
+    useNewUrlParser: true,
+   // useUnifiedTopology: true,
+   // useFindAndModify: false,
+   // useCreateIndex: true,  
+
+  }).then(()=> console.log("connection established") ).catch( (err)=>{
+    console.log(err)
+  }
+   );
 const ourAPP = express();
 ourAPP.use(express.json());
 //home
@@ -305,6 +321,7 @@ ourAPP.put("publications/update/book/:isbn", (req, res) => {
   Database.Publication.forEach((pub) => {
     if (pub.id ==pubId) {
       pub.books.push(req.params.isbn);
+
       return pub;
     }
     return pub;
@@ -315,6 +332,7 @@ ourAPP.put("publications/update/book/:isbn", (req, res) => {
       book.publication.push(pubId);
       return book;
     }
+    console.log(book);
     return book;
   });
   return res.json({
@@ -336,7 +354,7 @@ const {isbn}=req.params;
 const filteredBook=Database.Book.filter( (book)=>book.ISBN !== isbn)
 Database.Book=filteredBook;
 return res.json(Database.Book);
-} )
+} );
 
 
 
@@ -373,13 +391,19 @@ ourAPP.delete("/book/delete/author/:isbn/:id",(req,res)=>{
  } );
   
   return res.json({book: Database.Book, author: Database.Author});
-  } )
+  } );
+
+
+
+
   
-// Route    - /publication/delete/:id
-// Des      - delete a publication
+ // Route    - /publications/delete/:id
+// Des      - delete a publication 
 // Access   - Public
 // Method   - delete
 // Params   - none
+// Body     - none
+
 
 ourAPP.delete("/publications/delete/:id",(req,res)=>{
   const {id}=req.params;
@@ -387,6 +411,91 @@ ourAPP.delete("/publications/delete/:id",(req,res)=>{
   Database.Publication=filterPub;  ---> 1st method*/
   Database.Publication=Database.Publication.filter( (pub)=>pub.id !==parseInt(id))
   return res.json( Database.Publication);
-}  )
+}  );
+
+
+
+
+// Route    - /publications/delete/book
+// Des      - delete a publication from book
+// Access   - Public
+// Method   - delete
+// Params   - nid,isbn
+// Body     - none
+
+
+/*
+ourAPP.delete("/publication/delete/book/:isbn/:id", (req, res) => {
+  const { isbn, id } = req.params;
+  Database.Book.forEach((book) => {
+      if (book.ISBN === isbn) {
+          book.publication = 0;
+          return book; }
+      return book;
+  });
+
+  Database.Publication.forEach((publication) => {
+      if (publication.id === parseInt(id)) {
+          const filteredBooks = publication.books.filter(
+              (book) => book !== isbn
+          );
+          publication.books = filteredBooks;
+          return publication;
+      }
+      return publication;  
+  });
+  return res.json({ book: Database.Book, publication: Database.Publication });
+});
+*/
+
+//2nd
+//error somewhere
+ourAPP.delete("/publications/book/delete/:id/:isbn ", (req,res)=>{
+  const{ isbn,id }=req.params;
+ /*
+Database.Book.forEach((book)=>{
+  if(book.ISBN===isbn){
+    book.publication=0;
+    return book;
+  }
+  return book;
+});*/
+Database.Book.forEach((book) => {
+  if (book.ISBN === isbn) {
+      book.publication = 0;
+      return book;
+  }
+  return book;
+});
+
+
+/*
+  Database.Publication.forEach((publication)=>{
+    if(publication.id=== parseInt( id)){
+    const filteredBook= publication.books.filter(
+       (book) => book !== isbn);
+    publication.books=filteredBook;
+    return publication;
+  }
+  return publication;
+  } );*/
+
+  Database.Publication.forEach((publication) => {
+    if (publication.id === parseInt(id)) {
+        const filteredBooks = publication.books.filter(
+            (book) => book !== isbn
+        );
+        publication.books = filteredBooks;
+        return publication;
+    }
+    return publication;
+});
+
+return res.json({ book: Database.Book, publication: Database.Publication });
+
+
+  //return res.json( {book:Database.Book, publication:Database.Publication});
+  } );
+
 
 ourAPP.listen(4000, () => console.log("it  is working"));
